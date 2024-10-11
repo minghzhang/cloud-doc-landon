@@ -1,0 +1,33 @@
+.tablist-componment {
+  .close-icon {
+    visibility: hidden;
+  }
+
+  .nav-link:hover .close-icon {
+    visibility: visible;
+  }
+
+  .nav-link.active .close-icon {
+    visibility: visible;
+  }
+
+  .unsaved-icon {
+    display: inline-block;
+    background: red;
+    width: 11px;
+    height: 11px;
+  }
+
+  .withUnSaved.nav-link .close-icon {
+    display: none;
+  }
+
+  .withUnSaved.nav-link:hover .close-icon {
+    display: inline-block;
+  }
+
+  .withUnSaved.nav-link:hover .unsaved-icon {
+    display: none;
+  }
+
+}

@@ -32,7 +32,9 @@ function App() {
                 <div className="col-9">
                     <TabList files={defaultFiles}
                              activeId="1"
+                             unSaveIds={["1", "2"]}
                              onTabClick={(fileId) => console.log(fileId)}
+                             onTabClose={(fileId) => console.log('tab closed', fileId)}
                     />
                 </div>
             </div>
