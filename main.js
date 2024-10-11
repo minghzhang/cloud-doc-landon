@@ -7,7 +7,7 @@ app.whenReady().then(() => {
     // 使用动态导入加载 ES Module
     const isDev = true;
     mainWindow = new BrowserWindow({
-        width: 800,
+        width: 1024,
         height: 680,
         webPreferences: {
             nodeIntegration: true,
