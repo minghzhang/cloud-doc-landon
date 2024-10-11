@@ -6,7 +6,7 @@ const BottomBtn = ({text, colorClass, icon, onBtnClick}) => {
 
     return (
         <>
-            <button type="button" onClick={onBtnClick} className={`btn w-100 border-0 ${colorClass}`}>
+            <button type="button" onClick={onBtnClick} className={`btn w-100 border-0 no-border ${colorClass}`}>
                 <FontAwesomeIcon icon={icon} size="lg" className="me-2"/>
                 {text}
             </button>
