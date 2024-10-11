@@ -10,7 +10,11 @@ function App() {
             <div className="row">
                 <div className="col-6">
                     <FileSearch title="my cloud doc" onFileSearch={(value) => console.log(value)}/>
-                    <FileList files={defaultFiles}/>
+                    <FileList files={defaultFiles}
+                              onFileClick={(fileId) => console.log('clicking', fileId)}
+                              onFileDelete={(fileId) => console.log('deleting ', fileId)}
+                              onSaveEdit={(fileId, newValue) => console.log('save', fileId, newValue)}
+                    />
                 </div>
                 <div className="col-6 bg-warning">
 
