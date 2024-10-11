@@ -1,5 +1,7 @@
 import './App.css';
 import 'bootstrap/dist/css/bootstrap.min.css';
+import SimpleMDE from "react-simplemde-editor";
+import "easymde/dist/easymde.min.css";
 import FileSearch from "./componments/FileSearch";
 import FileList from "./componments/FileList";
 import defaultFiles from "./utils/defaultFiles";
@@ -35,6 +37,14 @@ function App() {
                              unSaveIds={["1", "2"]}
                              onTabClick={(fileId) => console.log(fileId)}
                              onTabClose={(fileId) => console.log('tab closed', fileId)}
+                    />
+
+                    <SimpleMDE
+                        value={defaultFiles[1].body}
+                        onChange={(value) => console.log(value)}
+                        options={{
+                            minHeight: '515px'
+                        }}
                     />
                 </div>
             </div>
