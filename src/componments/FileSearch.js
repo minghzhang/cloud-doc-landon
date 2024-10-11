@@ -38,30 +38,28 @@ const FileSearch = ({title, onFileSearch}) => {
     }, [inputActive])
     return (
         <>
-            <div className="alert alert-primary">
+            <div className="alert alert-primary d-flex justify-content-between align-items-center">
                 {!inputActive &&
-                    <div className="d-flex justify-content-between align-items-center">
+                    <>
                         <span className="">{title}</span>
                         <button type="button" className="icon-button" onClick={() => setInputActive(true)}>
                             <FontAwesomeIcon icon={faSearch} size="lg"/>
                         </button>
-                    </div>
+                    </>
                 }
+
                 {inputActive &&
-                    <div className="d-flex justify-content-between align-items-center">
+                    <>
                         <input type="text" className="form-control" value={value} ref={node}
                                onChange={(e) => setValue(e.target.value)}/>
 
                         <button type="button" className="icon-button" onClick={closeSearch}>
                             <FontAwesomeIcon icon={faTimes} size="lg"/>
                         </button>
-                    </div>
+                    </>
                 }
             </div>
-
         </>
-
-
     );
 
 }
