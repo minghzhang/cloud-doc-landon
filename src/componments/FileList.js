@@ -3,33 +3,27 @@ import {FontAwesomeIcon} from '@fortawesome/react-fontawesome';
 import {faMarkdown} from "@fortawesome/free-brands-svg-icons";
 import {faEdit, faTimes, faTrash} from "@fortawesome/free-solid-svg-icons";
 import PropTypes from "prop-types";
+import useKeyPress from "../hooks/useKeyPress";
 
 const FileList = ({files, onFileClick, onSaveEdit, onFileDelete}) => {
     const [editFileId, setEditFileId] = useState(null);
     const [value, setValue] = useState('');
 
-    const closeSearch = (event) => {
-        event.preventDefault();
+    const closeSearch = () => {
         setEditFileId(null);
         setValue('');
     }
 
-    const handleInputEvent = (event) => {
-        const {keyCode} = event;
-        const editFile = files.find(file => file.id === editFileId);
-        if (keyCode === 13) {
-            onSaveEdit(editFile.id, event.target.value);
-            setEditFileId(editFile.id);
-            closeSearch(event);
-        } else if (keyCode === 27) {
-            closeSearch(event);
-        }
-    }
+    const enterKeyPressed = useKeyPress(13);
+    const escKeyPressed = useKeyPress(27);
     useEffect(() => {
-        document.addEventListener('keyup', handleInputEvent);
-
-        return () => {
-            document.removeEventListener('keyup', handleInputEvent);
+        const editFile = files.find(file => file.id === editFileId);
+        if (enterKeyPressed && editFile) {
+            onSaveEdit(editFile.id, value);
+            setEditFileId(editFile.id);
+            closeSearch();
+        } else if (escKeyPressed && editFile) {
+            closeSearch();
         }
     })
 

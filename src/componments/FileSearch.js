@@ -2,32 +2,28 @@ import React, {useState, useEffect, useRef} from 'react';
 import {FontAwesomeIcon} from '@fortawesome/react-fontawesome';
 import {faSearch, faTimes} from '@fortawesome/free-solid-svg-icons';
 import PropTypes from "prop-types";
+import useKeyPress from "../hooks/useKeyPress";
+
 const FileSearch = ({title, onFileSearch}) => {
     const [inputActive, setInputActive] = useState(false);
     const [value, setValue] = useState('');
 
-    const closeSearch = (event) => {
-        event.preventDefault();
+    const closeSearch = () => {
         setInputActive(false);
         setValue('');
     }
 
     let node = useRef(null);
-
+    let enterKeyPressed = useKeyPress(13);
+    let escKeyPressed = useKeyPress(27);
     useEffect(() => {
-        const handleInputEvent = (event) => {
-            const {keyCode} = event;
-            //Enter
-            if (keyCode === 13 && inputActive) {
-                onFileSearch(value);
-            } else if (keyCode === 27 && inputActive) {//esc
-                closeSearch(event);
-            }
+        if (enterKeyPressed && inputActive) {
+            onFileSearch(value);
         }
-        document.addEventListener('keyup', handleInputEvent);
-        return () => {
-            document.removeEventListener('keyup', handleInputEvent);
+        if (escKeyPressed && inputActive) {
+            closeSearch();
         }
+
     })
 
     //input 自动获取光标
@@ -69,7 +65,5 @@ FileSearch.propTypes = {
     onFileSearch: PropTypes.func.isRequired
 }
 
-FileSearch.defaultProps = {
-    title: '我的云文档',
-}
+
 export default FileSearch;
