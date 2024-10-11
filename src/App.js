@@ -6,6 +6,7 @@ import defaultFiles from "./utils/defaultFiles";
 import {FontAwesomeIcon} from '@fortawesome/react-fontawesome';
 import {faPlus, faFileImport} from '@fortawesome/free-solid-svg-icons';
 import BottomBtn from "./componments/BottomBtn";
+import TabList from "./componments/TabList";
 
 function App() {
     return (
@@ -28,8 +29,11 @@ function App() {
                     </div>
 
                 </div>
-                <div className="col-9 bg-warning">
-
+                <div className="col-9">
+                    <TabList files={defaultFiles}
+                             activeId="1"
+                             onTabClick={(fileId) => console.log(fileId)}
+                    />
                 </div>
             </div>
         </div>
