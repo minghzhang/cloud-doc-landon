@@ -18,10 +18,44 @@ function App() {
     const [unSavedFileIds, setUnSavedFileIds] = useState([]);
 
     const openedFiles = openedFileIds.map(fileId => {
-        files.find(file => file.id === fileId);
+        return files.find(file => file.id === fileId);
     })
 
-    const activeFile = files.find(file => file.id === activeFileId);
+
+    const activeFile = activeFileId && files.find(file => file.id === activeFileId);
+
+    const fileClick = (fileId) => {
+        setActiveFileId(fileId);
+        if (!openedFileIds.includes(fileId)) {
+            setOpenedFileIds([...openedFileIds, fileId]);
+        }
+    }
+
+    const tabClick = (fileId) => {
+        setActiveFileId(fileId);
+    }
+
+    const tabClose = (fileId) => {
+        const otherOpenedFileIds = openedFileIds.filter(id => id !== fileId);
+        setOpenedFileIds(otherOpenedFileIds);
+        if (otherOpenedFileIds.length > 0) {
+            setActiveFileId(otherOpenedFileIds[0]);
+        } else {
+            setActiveFileId('')
+        }
+    }
+
+    const tabContentChange = (fileId, value) => {
+        files.map(file => {
+            if (file.id === fileId) {
+                file.body = value;
+            }
+        });
+
+        if (!unSavedFileIds.includes(fileId)) {
+            setUnSavedFileIds([...unSavedFileIds, fileId])
+        }
+    }
 
     return (
         <div className="App container-fluid px-0">
@@ -29,7 +63,7 @@ function App() {
                 <div className="col-3 left-panel">
                     <FileSearch title="my cloud doc" onFileSearch={(value) => console.log(value)}/>
                     <FileList files={files}
-                              onFileClick={(fileId) => console.log('clicking', fileId)}
+                              onFileClick={fileClick}
                               onFileDelete={(fileId) => console.log('deleting ', fileId)}
                               onSaveEdit={(fileId, newValue) => console.log('save', fileId, newValue)}
                     />
@@ -56,13 +90,13 @@ function App() {
                             <TabList files={openedFiles}
                                      activeId={activeFileId}
                                      unSaveIds={unSavedFileIds}
-                                     onTabClick={(fileId) => console.log(fileId)}
-                                     onTabClose={(fileId) => console.log('tab closed', fileId)}
+                                     onTabClick={tabClick}
+                                     onTabClose={tabClose}
                             />
 
                             <SimpleMDE
                                 value={activeFile && activeFile.body}
-                                onChange={(value) => console.log(value)}
+                                onChange={(value) => tabContentChange(activeFile.id, value)}
                                 options={{
                                     minHeight: '515px'
                                 }}

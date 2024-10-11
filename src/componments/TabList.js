@@ -11,7 +11,8 @@ const TabList = ({files, activeId, unSaveIds, onTabClick, onTabClose}) => {
             <ul className="nav nav-pills tablist-componment">
                 {
 
-                    files.map((file,) => {
+                    files.filter((file) => file !== undefined).map((file) => {
+
                         const withUnSavedMark = unSaveIds.includes(file.id);
                         const fClassName = classNames({
                             'active': activeId === file.id,

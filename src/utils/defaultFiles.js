@@ -14,7 +14,7 @@ const defaultFiles = [
     {
         id: '3',
         title: "third post",
-        body: '## should be aware of this',
+        body: '## third content',
         createdAt: '1563764965704',
     }
 ]
