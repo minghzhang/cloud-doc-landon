@@ -13,7 +13,7 @@ app.whenReady().then(() => {
             nodeIntegration: true,
         }
     })
-
+    mainWindow.webContents.openDevTools();
     const urlLocation = isDev ? 'http://127.0.0.1:3000' : 'http://dummyUrl'
     mainWindow.loadURL(urlLocation);
 
