@@ -1,7 +1,8 @@
 const {app, BrowserWindow} = require('electron');
 //const isDev = require('electron-is-dev');
 let mainWindow;
-const { exec } = require('child_process'); // 用于终止进程
+const {exec} = require('child_process');
+const path = require("node:path"); // 用于终止进程
 
 app.whenReady().then(() => {
     // 使用动态导入加载 ES Module
@@ -10,7 +11,9 @@ app.whenReady().then(() => {
         width: 1024,
         height: 680,
         webPreferences: {
-            nodeIntegration: true,
+            preload: path.join(__dirname, 'preload.js'),
+            nodeIntegration: true, // 允许在渲染进程中使用 Node.js API
+            contextIsolation: false,
         }
     })
     mainWindow.webContents.openDevTools();

@@ -11,20 +11,20 @@ import BottomBtn from "./componments/BottomBtn";
 import TabList from "./componments/TabList";
 import {useState} from "react";
 import {v4 as uuidv4} from 'uuid';
-
+import {flattenArr, objToArray} from "./utils/helper";
 
 function App() {
-    const [files, setFiles] = useState(defaultFiles);
+    const [files, setFiles] = useState(flattenArr(defaultFiles));
     const [activeFileId, setActiveFileId] = useState('');
     const [openedFileIds, setOpenedFileIds] = useState([]);
     const [unSavedFileIds, setUnSavedFileIds] = useState([]);
     const [searchFiles, setSearchFiles] = useState([]);
     const openedFiles = openedFileIds.map(fileId => {
-        return files.find(file => file.id === fileId);
+        return files[fileId];
     })
+    const filesArr = objToArray(files);
 
-
-    const activeFile = activeFileId && files.find(file => file.id === activeFileId);
+    const activeFile = activeFileId && files[activeFileId];
 
     const fileClick = (fileId) => {
         setActiveFileId(fileId);
@@ -48,13 +48,8 @@ function App() {
     }
 
     const fileChange = (fileId, value) => {
-        let newFiles = files.map(file => {
-            if (file.id === fileId) {
-                file.body = value;
-            }
-            return file;
-        });
-        setFiles(newFiles)
+        const newFile = {...files[fileId], body: value};
+        setFiles({...files, [fileId]: newFile});
 
         if (!unSavedFileIds.includes(fileId)) {
             setUnSavedFileIds([...unSavedFileIds, fileId]);
@@ -62,41 +57,37 @@ function App() {
     }
 
     const fileDelete = (fileId) => {
-        const newFiles = files.filter(file => file.id !== fileId);
-        setFiles(newFiles)
+        delete files[fileId];
+        setFiles(files)
         //close the tab
         tabClose(fileId);
     }
 
     const fileNameChange = (fileId, newTitle) => {
-        const newFiles = files.map(file => {
-            if (file.id === fileId) {
-                file.title = newTitle;
-                file.isNew = false;
-            }
-            return file;
-        });
-        setFiles(newFiles);
+
+        const modifiedFile = {...files[fileId], 'title': newTitle, isNew: false};
+        console.log(modifiedFile);
+        setFiles({...files, [fileId]: modifiedFile});
     }
 
     const fileSearch = (keywords) => {
-        let newFiles = files.filter(file => file.title.includes(keywords));
+        let newFiles = filesArr.filter(file => file.title.includes(keywords));
         setSearchFiles(newFiles);
     }
 
     const createNewFile = () => {
-        const newFiles = [...files, {
-            id: uuidv4(),
+        const newId = uuidv4();
+        const newFile = {
+            id: newId,
             title: '',
             body: '## please add Markdown content',
             createdAt: new Date().getTime(),
             isNew: true,
-        }]
-        setFiles(newFiles);
+        }
+        setFiles({...files, [newId]: newFile});
     }
 
-    const fileListArr = searchFiles.length > 0 ? searchFiles : files;
-
+    const fileListArr = searchFiles.length > 0 ? searchFiles : filesArr;
     return (
         <div className="App container-fluid px-0">
             <div className="row g-0">
