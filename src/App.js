@@ -6,12 +6,16 @@ import FileSearch from "./componments/FileSearch";
 import FileList from "./componments/FileList";
 import defaultFiles from "./utils/defaultFiles";
 import {FontAwesomeIcon} from '@fortawesome/react-fontawesome';
-import {faPlus, faFileImport} from '@fortawesome/free-solid-svg-icons';
+import {faPlus, faFileImport, faSave} from '@fortawesome/free-solid-svg-icons';
 import BottomBtn from "./componments/BottomBtn";
 import TabList from "./componments/TabList";
 import {useState} from "react";
 import {v4 as uuidv4} from 'uuid';
 import {flattenArr, objToArray} from "./utils/helper";
+import fileHelper from "./utils/fileHelper";
+
+const {join} = window.require("path");
+const {app} = window.require("@electron/remote");
 
 function App() {
     const [files, setFiles] = useState(flattenArr(defaultFiles));
@@ -23,9 +27,10 @@ function App() {
         return files[fileId];
     })
     const filesArr = objToArray(files);
-
+    const fileListArr = searchFiles.length > 0 ? searchFiles : filesArr;
     const activeFile = activeFileId && files[activeFileId];
 
+    const savedLocation = app.getPath("documents");
     const fileClick = (fileId) => {
         setActiveFileId(fileId);
         if (!openedFileIds.includes(fileId)) {
@@ -57,15 +62,32 @@ function App() {
     }
 
     const fileDelete = (fileId) => {
-        delete files[fileId];
-        setFiles(files)
-        //close the tab
-        tabClose(fileId);
+        fileHelper.deleteFile(join(savedLocation, `${files[fileId].title}.md`)).then(() => {
+            delete files[fileId];
+            setFiles(files)
+            //close the tab
+            tabClose(fileId);
+        });
+
     }
 
-    const fileNameChange = (fileId, newTitle) => {
-
+    const fileNameChange = (fileId, newTitle, isNew) => {
         const modifiedFile = {...files[fileId], 'title': newTitle, isNew: false};
+        if (isNew) {
+            fileHelper.writeFile(join(savedLocation, `${newTitle}.md`), files[fileId].body).then(
+                () => {
+                    setFiles({...files, [fileId]: modifiedFile});
+                }
+            )
+        } else {
+            fileHelper.renameFile(join(savedLocation, `${files[fileId].title}.md`),
+                join(savedLocation, `${newTitle}.md`)).then(
+                () => {
+                    setFiles({...files, [fileId]: modifiedFile});
+                }
+            );
+        }
+
         console.log(modifiedFile);
         setFiles({...files, [fileId]: modifiedFile});
     }
@@ -87,7 +109,13 @@ function App() {
         setFiles({...files, [newId]: newFile});
     }
 
-    const fileListArr = searchFiles.length > 0 ? searchFiles : filesArr;
+    const saveCurrentActiveFile = () => {
+        fileHelper.writeFile(join(savedLocation, `${activeFile.title}.md`), activeFile.body).then(() => {
+            setUnSavedFileIds(unSavedFileIds.filter(id => id !== activeFileId));
+        })
+    }
+
+
     return (
         <div className="App container-fluid px-0">
             <div className="row g-0">
@@ -134,6 +162,9 @@ function App() {
 
                                 }}
                             />
+
+                            <BottomBtn text="Save" onBtnClick={saveCurrentActiveFile} colorClass="btn-success"
+                                       icon={faSave}/>
                         </>
                     }
 
