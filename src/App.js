@@ -10,6 +10,8 @@ import {faPlus, faFileImport} from '@fortawesome/free-solid-svg-icons';
 import BottomBtn from "./componments/BottomBtn";
 import TabList from "./componments/TabList";
 import {useState} from "react";
+import {v4 as uuidv4} from 'uuid';
+
 
 function App() {
     const [files, setFiles] = useState(defaultFiles);
@@ -54,6 +56,9 @@ function App() {
         });
         setFiles(newFiles)
 
+        if (!unSavedFileIds.includes(fileId)) {
+            setUnSavedFileIds([...unSavedFileIds, fileId]);
+        }
     }
 
     const fileDelete = (fileId) => {
@@ -67,6 +72,7 @@ function App() {
         const newFiles = files.map(file => {
             if (file.id === fileId) {
                 file.title = newTitle;
+                file.isNew = false;
             }
             return file;
         });
@@ -76,6 +82,17 @@ function App() {
     const fileSearch = (keywords) => {
         let newFiles = files.filter(file => file.title.includes(keywords));
         setSearchFiles(newFiles);
+    }
+
+    const createNewFile = () => {
+        const newFiles = [...files, {
+            id: uuidv4(),
+            title: '',
+            body: '## please add Markdown content',
+            createdAt: new Date().getTime(),
+            isNew: true,
+        }]
+        setFiles(newFiles);
     }
 
     const fileListArr = searchFiles.length > 0 ? searchFiles : files;
@@ -92,7 +109,7 @@ function App() {
                     />
                     <div className="row g-0 button-group">
                         <div className="col-6">
-                            <BottomBtn text="new" colorClass="btn-primary" icon={faPlus}/>
+                            <BottomBtn text="new" colorClass="btn-primary" icon={faPlus} onBtnClick={createNewFile}/>
                         </div>
                         <div className="col-6">
                             <BottomBtn text="import" colorClass="btn-success" icon={faFileImport}/>
