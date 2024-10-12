@@ -21,6 +21,7 @@ const FileList = ({files, onFileClick, onSaveEdit, onFileDelete}) => {
         if (enterKeyPressed && editFile) {
             onSaveEdit(editFile.id, value);
             setEditFileId(editFile.id);
+
             closeSearch();
         } else if (escKeyPressed && editFile) {
             closeSearch();

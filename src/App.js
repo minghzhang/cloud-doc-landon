@@ -16,7 +16,7 @@ function App() {
     const [activeFileId, setActiveFileId] = useState('');
     const [openedFileIds, setOpenedFileIds] = useState([]);
     const [unSavedFileIds, setUnSavedFileIds] = useState([]);
-
+    const [searchFiles, setSearchFiles] = useState([]);
     const openedFiles = openedFileIds.map(fileId => {
         return files.find(file => file.id === fileId);
     })
@@ -45,27 +45,50 @@ function App() {
         }
     }
 
-    const tabContentChange = (fileId, value) => {
-        files.map(file => {
+    const fileChange = (fileId, value) => {
+        let newFiles = files.map(file => {
             if (file.id === fileId) {
                 file.body = value;
             }
+            return file;
         });
+        setFiles(newFiles)
 
-        if (!unSavedFileIds.includes(fileId)) {
-            setUnSavedFileIds([...unSavedFileIds, fileId])
-        }
     }
+
+    const fileDelete = (fileId) => {
+        const newFiles = files.filter(file => file.id !== fileId);
+        setFiles(newFiles)
+        //close the tab
+        tabClose(fileId);
+    }
+
+    const fileNameChange = (fileId, newTitle) => {
+        const newFiles = files.map(file => {
+            if (file.id === fileId) {
+                file.title = newTitle;
+            }
+            return file;
+        });
+        setFiles(newFiles);
+    }
+
+    const fileSearch = (keywords) => {
+        let newFiles = files.filter(file => file.title.includes(keywords));
+        setSearchFiles(newFiles);
+    }
+
+    const fileListArr = searchFiles.length > 0 ? searchFiles : files;
 
     return (
         <div className="App container-fluid px-0">
             <div className="row g-0">
                 <div className="col-3 left-panel">
-                    <FileSearch title="my cloud doc" onFileSearch={(value) => console.log(value)}/>
-                    <FileList files={files}
+                    <FileSearch title="my cloud doc" onFileSearch={fileSearch}/>
+                    <FileList files={fileListArr}
                               onFileClick={fileClick}
-                              onFileDelete={(fileId) => console.log('deleting ', fileId)}
-                              onSaveEdit={(fileId, newValue) => console.log('save', fileId, newValue)}
+                              onFileDelete={fileDelete}
+                              onSaveEdit={fileNameChange}
                     />
                     <div className="row g-0 button-group">
                         <div className="col-6">
@@ -96,9 +119,11 @@ function App() {
 
                             <SimpleMDE
                                 value={activeFile && activeFile.body}
-                                onChange={(value) => tabContentChange(activeFile.id, value)}
+                                onChange={(value) => fileChange(activeFile.id, value)}
                                 options={{
-                                    minHeight: '515px'
+                                    minHeight: '515px',
+                                    autofocus: true
+
                                 }}
                             />
                         </>
