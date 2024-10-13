@@ -12,10 +12,7 @@ import TabList from "./componments/TabList";
 import {useState} from "react";
 import {v4 as uuidv4} from 'uuid';
 import {flattenArr, objToArray} from "./utils/helper";
-import fileHelper from "./utils/fileHelper";
 
-const {join} = window.require("path");
-const {app} = window.require("@electron/remote");
 
 function App() {
     const [files, setFiles] = useState(flattenArr(defaultFiles));
@@ -30,7 +27,11 @@ function App() {
     const fileListArr = searchFiles.length > 0 ? searchFiles : filesArr;
     const activeFile = activeFileId && files[activeFileId];
 
-    const savedLocation = app.getPath("documents");
+    async function fetchAppPath(name) {
+        return await window.electronAPI.getSavedLocation(name);
+    }
+
+    //readFile("hello.md")
     const fileClick = (fileId) => {
         setActiveFileId(fileId);
         if (!openedFileIds.includes(fileId)) {
@@ -61,34 +62,30 @@ function App() {
         }
     }
 
-    const fileDelete = (fileId) => {
-        fileHelper.deleteFile(join(savedLocation, `${files[fileId].title}.md`)).then(() => {
+    const fileDelete = async (fileId) => {
+        let path = await getFullFilePath(`${files[fileId].title}`);
+        window.electronAPI.deleteFile(path).then(() => {
             delete files[fileId];
             setFiles(files)
             //close the tab
             tabClose(fileId);
-        });
-
+        })
     }
 
-    const fileNameChange = (fileId, newTitle, isNew) => {
+    const fileNameChange = async (fileId, newTitle, isNew) => {
         const modifiedFile = {...files[fileId], 'title': newTitle, isNew: false};
         if (isNew) {
-            fileHelper.writeFile(join(savedLocation, `${newTitle}.md`), files[fileId].body).then(
-                () => {
-                    setFiles({...files, [fileId]: modifiedFile});
-                }
-            )
-        } else {
-            fileHelper.renameFile(join(savedLocation, `${files[fileId].title}.md`),
-                join(savedLocation, `${newTitle}.md`)).then(
-                () => {
-                    setFiles({...files, [fileId]: modifiedFile});
-                }
-            );
-        }
+            let path = await getFullFilePath(`${newTitle}`);
+            console.log(`path`, path);
+            await window.electronAPI.writeFile(path, files[fileId].body);
 
-        console.log(modifiedFile);
+        } else {
+            let oldPath = await getFullFilePath(`${files[fileId].title}`);
+            let newPath = await getFullFilePath(`${newTitle}`);
+            console.log("oldPath", oldPath);
+            console.log("newPath", newPath);
+            await window.electronAPI.renameFile(oldPath, newPath);
+        }
         setFiles({...files, [fileId]: modifiedFile});
     }
 
@@ -97,7 +94,7 @@ function App() {
         setSearchFiles(newFiles);
     }
 
-    const createNewFile = () => {
+    const createNewFile = async () => {
         const newId = uuidv4();
         const newFile = {
             id: newId,
@@ -109,8 +106,15 @@ function App() {
         setFiles({...files, [newId]: newFile});
     }
 
-    const saveCurrentActiveFile = () => {
-        fileHelper.writeFile(join(savedLocation, `${activeFile.title}.md`), activeFile.body).then(() => {
+    const getFullFilePath = async (name) => {
+        let path = await fetchAppPath("documents");
+        path += `/${name}.md`;
+        return path;
+    }
+
+    const saveCurrentActiveFile = async () => {
+        let path = await getFullFilePath(`${activeFile.title}`);
+        window.electronAPI.writeFile(path, `${activeFile.body}`).then(() => {
             setUnSavedFileIds(unSavedFileIds.filter(id => id !== activeFileId));
         })
     }
