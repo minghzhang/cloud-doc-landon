@@ -70,6 +70,14 @@ function App() {
     //readFile("hello.md")
     const fileClick = (fileId) => {
         setActiveFileId(fileId);
+        const currentFile = files[fileId];
+        if (!currentFile.isLoaded) {
+            window.electronAPI.readFile(currentFile.path).then(data => {
+                const newFile = {...currentFile, body: data, isLoaded: true};
+                setFiles({...files, [fileId]: newFile});
+
+            })
+        }
         if (!openedFileIds.includes(fileId)) {
             setOpenedFileIds([...openedFileIds, fileId]);
         }
