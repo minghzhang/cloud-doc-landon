@@ -12,7 +12,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
     openDialog: () => ipcRenderer.invoke("open_dialog"),
     showMessageBox: (type, title, message) => ipcRenderer.invoke("show_message_box", type, title, message),
     // 提供一个方法让渲染进程请求弹出右键菜单
-    showContextMenu: (itemArray) => ipcRenderer.send('show-context-menu',itemArray),
+    showContextMenu: (itemArray,targetItemId) => ipcRenderer.send('show-context-menu',itemArray, targetItemId),
 
     // 提供一个方法监听菜单点击的命令
     onContextMenuCommand: (callback) => ipcRenderer.on('context-menu-command', callback),

@@ -64,16 +64,17 @@ async function handleShowMessageBox(event, type, title, message) {
     });
 }
 
-const handleShowContextMenu = (event, menuItems) => {
+const handleShowContextMenu = (event, menuItems, targetItemId) => {
     let template = menuItems.map(item => {
         return {
             "label": item.label,
             "click": () => {
-                event.sender.send('context-menu-command', item.action)
+                event.sender.send('context-menu-command', item.action, targetItemId)
             }
         };
     });
     const menu = Menu.buildFromTemplate(template);
+    console.log(event.target);
     menu.popup(BrowserWindow.fromWebContents(event.sender)); // 在当前窗口弹出菜单
 }
 
