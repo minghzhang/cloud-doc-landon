@@ -45,6 +45,46 @@ const FileList = ({files, onFileClick, onSaveEdit, onFileDelete}) => {
         }
     }, [files])
 
+    useEffect(() => {
+        // 监听右键点击事件
+        const handleContextMenu = (event) => {
+            event.preventDefault(); // 禁用默认的右键菜单
+            const itemArray = [
+                {
+                    label: 'open',
+                    action: 'open'
+                },
+                {
+                    label: 'rename',
+                    action: 'rename'
+                },
+                {
+                    label: 'delete',
+                    action: 'delete',
+                }
+            ];
+            window.electronAPI.showContextMenu( itemArray); // 触发主进程显示自定义右键菜单
+        };
+
+        // 监听菜单点击命令
+        window.electronAPI.onContextMenuCommand((event, command) => {
+            if (command === 'rename') {
+                console.log('MenuItem rename clicked');
+            } else if (command === 'delete') {
+                console.log('MenuItem delete clicked');
+            }else if (command === 'open') {
+                console.log('MenuItem open clicked');
+            }
+        });
+
+        // 给整个文档添加右键点击事件监听器
+        document.addEventListener('contextmenu', handleContextMenu);
+        // 组件卸载时清除监听器
+        return () => {
+            document.removeEventListener('contextmenu', handleContextMenu);
+        };
+    }, [])
+
     let node = useRef(null);
     return (<ul className="list-group list-group-flush file-list">
         {files.map((file) => (

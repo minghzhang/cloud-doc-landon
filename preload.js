@@ -10,8 +10,12 @@ contextBridge.exposeInMainWorld('electronAPI', {
     getStoreValue: (key) => ipcRenderer.invoke("get_store_value", key),
     deleteStoreKey: (key) => ipcRenderer.invoke("delete_store_key", key),
     openDialog: () => ipcRenderer.invoke("open_dialog"),
-    showMessageBox: (type,title,message) => ipcRenderer.invoke("show_message_box",type,title,message),
+    showMessageBox: (type, title, message) => ipcRenderer.invoke("show_message_box", type, title, message),
+    // 提供一个方法让渲染进程请求弹出右键菜单
+    showContextMenu: (itemArray) => ipcRenderer.send('show-context-menu',itemArray),
 
+    // 提供一个方法监听菜单点击的命令
+    onContextMenuCommand: (callback) => ipcRenderer.on('context-menu-command', callback),
 })
 
 console.log("loading preload.js")

@@ -1,12 +1,13 @@
-import {app, ipcMain, dialog, BrowserWindow} from 'electron';
+import {app, BrowserWindow, dialog, ipcMain, Menu, MenuItem} from 'electron';
 import isDev from 'electron-is-dev';
-
-let mainWindow;
 import {exec} from 'child_process';
 import fs from "fs";
 import path from "node:path"; // 用于终止进程
 import {dirname} from 'path';
 import {fileURLToPath} from 'url';
+import Store from 'electron-store';
+
+let mainWindow;
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -27,8 +28,6 @@ async function handleDeleteFile(event, path) {
     return await fs.promises.unlink(path);
 }
 
-
-import Store from 'electron-store';
 
 const store = new Store({'name': "Files_Data"});
 
@@ -65,6 +64,20 @@ async function handleShowMessageBox(event, type, title, message) {
     });
 }
 
+const handleShowContextMenu = (event, menuItems) => {
+    let template = menuItems.map(item => {
+        return {
+            "label": item.label,
+            "click": () => {
+                event.sender.send('context-menu-command', item.action)
+            }
+        };
+    });
+    const menu = Menu.buildFromTemplate(template);
+    menu.popup(BrowserWindow.fromWebContents(event.sender)); // 在当前窗口弹出菜单
+}
+
+
 app.whenReady().then(() => {
 
     ipcMain.handle('get_savedLocation', (event, name) => {
@@ -80,6 +93,8 @@ app.whenReady().then(() => {
     ipcMain.handle('open_dialog', handleOpenDialog);
     ipcMain.handle('show_message_box', handleShowMessageBox);
 
+    // 监听渲染进程的右键点击事件
+    ipcMain.on('show-context-menu', handleShowContextMenu)
 
     mainWindow = new BrowserWindow({
         width: 1024,
