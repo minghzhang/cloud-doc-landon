@@ -4,7 +4,6 @@ import SimpleMDE from "react-simplemde-editor";
 import "easymde/dist/easymde.min.css";
 import FileSearch from "./componments/FileSearch.js";
 import FileList from "./componments/FileList.js";
-import defaultFiles from "./utils/defaultFiles.js";
 import {FontAwesomeIcon} from '@fortawesome/react-fontawesome';
 import {faPlus, faFileImport, faSave} from '@fortawesome/free-solid-svg-icons';
 import BottomBtn from "./componments/BottomBtn.js";
@@ -12,7 +11,7 @@ import TabList from "./componments/TabList.js";
 import {useState, useEffect} from "react";
 import {v4 as uuidv4} from 'uuid';
 import {flattenArr, objToArray} from "./utils/helper.js";
-
+import {getBaseName, getDirName, joinPaths} from "./utils/pathHelper.js";
 
 const saveFilesToStore = (files) => {
     const fileStoreObj = objToArray(files).reduce((result, file) => {
@@ -121,7 +120,7 @@ function App() {
         if (files[fileId].isNew) {
             setFiles(afterDelete)
         } else {
-            let path = await getFullFilePath(`${files[fileId].title}`);
+            let path = files[fileId].path;
             window.electronAPI.deleteFile(path).then(() => {
                 setFiles(afterDelete)
                 saveFilesToStore(afterDelete);
@@ -132,7 +131,7 @@ function App() {
     }
 
     const fileNameChange = async (fileId, newTitle, isNew) => {
-        let newPath = await getFullFilePath(`${newTitle}`);
+        let newPath = isNew ? await getFullFilePath(`${newTitle}`) : joinPaths(getDirName(files[fileId].path), `${newTitle}.md`);
         const modifiedFile = {...files[fileId], 'title': newTitle, 'path': newPath, isNew: false};
         const newFiles = {...files, [fileId]: modifiedFile};
         if (isNew) {
@@ -142,9 +141,7 @@ function App() {
             })
 
         } else {
-            let oldPath = await getFullFilePath(`${files[fileId].title}`);
-            let newPath = await getFullFilePath(`${newTitle}`);
-
+            let oldPath = files[fileId].path;
             await window.electronAPI.renameFile(oldPath, newPath).then(() => {
                 setFiles(newFiles);
                 saveFilesToStore(newFiles);
@@ -177,7 +174,7 @@ function App() {
     }
 
     const saveCurrentActiveFile = async () => {
-        let path = await getFullFilePath(`${activeFile.title}`);
+        let path = files[activeFileId].path;
         window.electronAPI.writeFile(path, `${activeFile.body}`).then(() => {
             setUnSavedFileIds(unSavedFileIds.filter(id => id !== activeFileId));
         })
@@ -185,7 +182,34 @@ function App() {
 
     const importFiles = async () => {
         await window.electronAPI.openDialog().then((resp) => {
-            console.log("chosen paths: ", resp.filePaths);
+            if (resp.filePaths.length > 0) {
+                console.log("chosen paths: ", resp.filePaths);
+
+                const filterPaths = resp.filePaths.filter(path => {
+                    const fileAdded = Object.values(files).find(file => file.path === path);
+                    return !fileAdded;
+                })
+
+                const waitingImportFiles = filterPaths.map(path => {
+                    const newFile = {
+                        id: uuidv4(),
+                        path: path,
+                        title: getBaseName(path, '.md'),
+                        createdAt: new Date().getTime(),
+                    }
+                    return newFile;
+                });
+
+                const newFiles = {...files, ...flattenArr(waitingImportFiles)}
+                setFiles(newFiles);
+                saveFilesToStore(newFiles);
+                if (waitingImportFiles.length > 0) {
+                    window.electronAPI.showMessageBox('info', `${waitingImportFiles.length} files are imported successfully.`, `${waitingImportFiles.length} files are imported successfully.`);
+                }
+                console.log(`waitingImportFiles`, waitingImportFiles);
+
+            }
+
         })
     }
 

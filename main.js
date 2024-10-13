@@ -57,6 +57,14 @@ async function handleOpenDialog(event) {
     });
 }
 
+async function handleShowMessageBox(event, type, title, message) {
+    return await dialog.showMessageBox({
+        type: type,
+        title: title,
+        message: message,
+    });
+}
+
 app.whenReady().then(() => {
 
     ipcMain.handle('get_savedLocation', (event, name) => {
@@ -70,6 +78,7 @@ app.whenReady().then(() => {
     ipcMain.handle('get_store_value', handleGetStoreValue);
     ipcMain.handle('delete_store_key', handleDeleteStoreKey);
     ipcMain.handle('open_dialog', handleOpenDialog);
+    ipcMain.handle('show_message_box', handleShowMessageBox);
 
 
     mainWindow = new BrowserWindow({
