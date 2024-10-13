@@ -9,13 +9,34 @@ import {FontAwesomeIcon} from '@fortawesome/react-fontawesome';
 import {faPlus, faFileImport, faSave} from '@fortawesome/free-solid-svg-icons';
 import BottomBtn from "./componments/BottomBtn.js";
 import TabList from "./componments/TabList.js";
-import {useState} from "react";
+import {useState, useEffect} from "react";
 import {v4 as uuidv4} from 'uuid';
 import {flattenArr, objToArray} from "./utils/helper.js";
 
 
+const saveFilesToStore = (files) => {
+    const fileStoreObj = objToArray(files).reduce((result, file) => {
+        const {id, path, title, createdAt} = file;
+        result[id] = {
+            id,
+            path,
+            title,
+            createdAt,
+        };
+        return result;
+    }, {});
+    window.electronAPI.saveStoreKV("files", fileStoreObj).then(() => {
+        console.log("saveStoreKV success.");
+    })
+}
+
+const getInitialFiles = async () => {
+    return await window.electronAPI.getStoreValue("files");
+}
+
 function App() {
-    const [files, setFiles] = useState(flattenArr(defaultFiles));
+
+    const [files, setFiles] = useState({});
     const [activeFileId, setActiveFileId] = useState('');
     const [openedFileIds, setOpenedFileIds] = useState([]);
     const [unSavedFileIds, setUnSavedFileIds] = useState([]);
@@ -26,6 +47,21 @@ function App() {
     const filesArr = objToArray(files);
     const fileListArr = searchFiles.length > 0 ? searchFiles : filesArr;
     const activeFile = activeFileId && files[activeFileId];
+
+    // 使用 useEffect 来处理异步调用
+    useEffect(() => {
+        const fetchInitialFiles = async () => {
+            const initialFiles = await getInitialFiles();
+            if (initialFiles) {
+                console.log(`initialFiles`, initialFiles);
+                setFiles(initialFiles);
+            } else {
+                setFiles({});
+            }
+        };
+        fetchInitialFiles();
+    }, []);  // 空依赖数组确保这个只在组件挂载时运行一次
+
 
     async function fetchAppPath(name) {
         return await window.electronAPI.getSavedLocation(name);
@@ -67,26 +103,32 @@ function App() {
         window.electronAPI.deleteFile(path).then(() => {
             delete files[fileId];
             setFiles(files)
+            saveFilesToStore(files);
             //close the tab
             tabClose(fileId);
         })
     }
 
     const fileNameChange = async (fileId, newTitle, isNew) => {
-        const modifiedFile = {...files[fileId], 'title': newTitle, isNew: false};
+        let newPath = await getFullFilePath(`${newTitle}`);
+        const modifiedFile = {...files[fileId], 'title': newTitle, 'path': newPath, isNew: false};
+        const newFiles = {...files, [fileId]: modifiedFile};
         if (isNew) {
-            let path = await getFullFilePath(`${newTitle}`);
-            console.log(`path`, path);
-            await window.electronAPI.writeFile(path, files[fileId].body);
+            await window.electronAPI.writeFile(newPath, files[fileId].body).then(() => {
+                setFiles(newFiles);
+                saveFilesToStore(newFiles);
+            })
 
         } else {
             let oldPath = await getFullFilePath(`${files[fileId].title}`);
             let newPath = await getFullFilePath(`${newTitle}`);
-            console.log("oldPath", oldPath);
-            console.log("newPath", newPath);
-            await window.electronAPI.renameFile(oldPath, newPath);
+
+            await window.electronAPI.renameFile(oldPath, newPath).then(() => {
+                setFiles(newFiles);
+                saveFilesToStore(newFiles);
+            })
         }
-        setFiles({...files, [fileId]: modifiedFile});
+
     }
 
     const fileSearch = (keywords) => {

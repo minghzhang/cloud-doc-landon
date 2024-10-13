@@ -1,14 +1,17 @@
 import {app, ipcMain, BrowserWindow} from 'electron';
 //const isDev = require('electron-is-dev');
 import isDev from 'electron-is-dev';
+
 let mainWindow;
 import {exec} from 'child_process';
 import fs from "fs";
-import path  from "node:path"; // 用于终止进程
-import { dirname } from 'path';
-import { fileURLToPath } from 'url';
+import path from "node:path"; // 用于终止进程
+import {dirname} from 'path';
+import {fileURLToPath} from 'url';
+
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
+
 async function handleReadFile(event, path) {
     return await fs.promises.readFile(path, {encoding: 'utf8'});
 }
@@ -25,6 +28,23 @@ async function handleDeleteFile(event, path) {
     return await fs.promises.unlink(path);
 }
 
+
+import Store from 'electron-store';
+
+const store = new Store({'name':"Files_Data"});
+
+async function handleSaveStoreKV(event, key, value) {
+    return await store.set(key, value);
+}
+
+async function handleGetStoreValue(event, key) {
+    return await store.get(key);
+}
+
+async function handleDeleteStoreKey(event, key) {
+    return await store.delete(key);
+}
+
 app.whenReady().then(() => {
 
     ipcMain.handle('get_savedLocation', (event, name) => {
@@ -34,6 +54,9 @@ app.whenReady().then(() => {
     ipcMain.handle('write_file', handleWriteFile);
     ipcMain.handle('rename_file', handleRenameFile);
     ipcMain.handle('delete_file', handleDeleteFile);
+    ipcMain.handle('save_storeKV', handleSaveStoreKV);
+    ipcMain.handle('get_store_value', handleGetStoreValue);
+    ipcMain.handle('delete_store_key', handleDeleteStoreKey);
 
     mainWindow = new BrowserWindow({
         width: 1024,
