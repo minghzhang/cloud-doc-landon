@@ -76,6 +76,16 @@ function App() {
                 const newFile = {...currentFile, body: data, isLoaded: true};
                 setFiles({...files, [fileId]: newFile});
 
+            }).catch(error => {
+                if (error.message.includes('ENOENT')) {
+                    console.error(`File not found: ${currentFile.path}`);
+                    const {[fileId]: value, ...filesAfterDelete} = files;
+                    saveFilesToStore(filesAfterDelete);
+                    setFiles(filesAfterDelete);
+                    tabClose(fileId);
+                } else {
+                    console.error(`An error occurred:`, error);
+                }
             })
         }
         if (!openedFileIds.includes(fileId)) {
@@ -107,14 +117,18 @@ function App() {
     }
 
     const fileDelete = async (fileId) => {
-        let path = await getFullFilePath(`${files[fileId].title}`);
-        window.electronAPI.deleteFile(path).then(() => {
-            delete files[fileId];
-            setFiles(files)
-            saveFilesToStore(files);
-            //close the tab
-            tabClose(fileId);
-        })
+        const {[fileId]: value, ...afterDelete} = files;
+        if (files[fileId].isNew) {
+            setFiles(afterDelete)
+        } else {
+            let path = await getFullFilePath(`${files[fileId].title}`);
+            window.electronAPI.deleteFile(path).then(() => {
+                setFiles(afterDelete)
+                saveFilesToStore(afterDelete);
+                //close the tab
+                tabClose(fileId);
+            })
+        }
     }
 
     const fileNameChange = async (fileId, newTitle, isNew) => {
