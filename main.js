@@ -1,5 +1,4 @@
-import {app, ipcMain, BrowserWindow} from 'electron';
-//const isDev = require('electron-is-dev');
+import {app, ipcMain, dialog, BrowserWindow} from 'electron';
 import isDev from 'electron-is-dev';
 
 let mainWindow;
@@ -31,7 +30,7 @@ async function handleDeleteFile(event, path) {
 
 import Store from 'electron-store';
 
-const store = new Store({'name':"Files_Data"});
+const store = new Store({'name': "Files_Data"});
 
 async function handleSaveStoreKV(event, key, value) {
     return await store.set(key, value);
@@ -43,6 +42,19 @@ async function handleGetStoreValue(event, key) {
 
 async function handleDeleteStoreKey(event, key) {
     return await store.delete(key);
+}
+
+async function handleOpenDialog(event) {
+    return await dialog.showOpenDialog({
+        title: "choose md files to import",
+        properties: ['openFile', 'multiSelections'],
+        filters: [
+            {
+                name: 'markdown filter',
+                extensions: ['md']
+            }
+        ]
+    });
 }
 
 app.whenReady().then(() => {
@@ -57,6 +69,8 @@ app.whenReady().then(() => {
     ipcMain.handle('save_storeKV', handleSaveStoreKV);
     ipcMain.handle('get_store_value', handleGetStoreValue);
     ipcMain.handle('delete_store_key', handleDeleteStoreKey);
+    ipcMain.handle('open_dialog', handleOpenDialog);
+
 
     mainWindow = new BrowserWindow({
         width: 1024,

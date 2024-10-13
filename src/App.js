@@ -183,6 +183,11 @@ function App() {
         })
     }
 
+    const importFiles = async () => {
+        await window.electronAPI.openDialog().then((resp) => {
+            console.log("chosen paths: ", resp.filePaths);
+        })
+    }
 
     return (
         <div className="App container-fluid px-0">
@@ -199,7 +204,8 @@ function App() {
                             <BottomBtn text="new" colorClass="btn-primary" icon={faPlus} onBtnClick={createNewFile}/>
                         </div>
                         <div className="col-6">
-                            <BottomBtn text="import" colorClass="btn-success" icon={faFileImport}/>
+                            <BottomBtn text="import" colorClass="btn-success" icon={faFileImport}
+                                       onBtnClick={importFiles}/>
                         </div>
                     </div>
 

@@ -9,6 +9,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
     saveStoreKV:(key, value) => ipcRenderer.invoke("save_storeKV", key, value),
     getStoreValue: (key) => ipcRenderer.invoke("get_store_value", key),
     deleteStoreKey: (key) => ipcRenderer.invoke("delete_store_key", key),
+    openDialog: () => ipcRenderer.invoke("open_dialog"),
 })
 
 console.log("loading preload.js")
