@@ -2,16 +2,16 @@ import './App.css';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import SimpleMDE from "react-simplemde-editor";
 import "easymde/dist/easymde.min.css";
-import FileSearch from "./componments/FileSearch";
-import FileList from "./componments/FileList";
-import defaultFiles from "./utils/defaultFiles";
+import FileSearch from "./componments/FileSearch.js";
+import FileList from "./componments/FileList.js";
+import defaultFiles from "./utils/defaultFiles.js";
 import {FontAwesomeIcon} from '@fortawesome/react-fontawesome';
 import {faPlus, faFileImport, faSave} from '@fortawesome/free-solid-svg-icons';
-import BottomBtn from "./componments/BottomBtn";
-import TabList from "./componments/TabList";
+import BottomBtn from "./componments/BottomBtn.js";
+import TabList from "./componments/TabList.js";
 import {useState} from "react";
 import {v4 as uuidv4} from 'uuid';
-import {flattenArr, objToArray} from "./utils/helper";
+import {flattenArr, objToArray} from "./utils/helper.js";
 
 
 function App() {

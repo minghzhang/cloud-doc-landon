@@ -1,12 +1,15 @@
-const {app, ipcMain, BrowserWindow} = require('electron');
+import {app, ipcMain, BrowserWindow} from 'electron';
 //const isDev = require('electron-is-dev');
+import isDev from 'electron-is-dev';
 let mainWindow;
-const {exec} = require('child_process');
-const fs = require("fs");
-const path = require("node:path"); // 用于终止进程
-
+import {exec} from 'child_process';
+import fs from "fs";
+import path  from "node:path"; // 用于终止进程
+import { dirname } from 'path';
+import { fileURLToPath } from 'url';
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
 async function handleReadFile(event, path) {
-    console.log("handleReadFile ", path);
     return await fs.promises.readFile(path, {encoding: 'utf8'});
 }
 
@@ -32,8 +35,6 @@ app.whenReady().then(() => {
     ipcMain.handle('rename_file', handleRenameFile);
     ipcMain.handle('delete_file', handleDeleteFile);
 
-    // 使用动态导入加载 ES Module
-    const isDev = true;
     mainWindow = new BrowserWindow({
         width: 1024,
         height: 680,

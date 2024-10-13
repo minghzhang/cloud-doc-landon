@@ -2,7 +2,7 @@ import React, {useState, useEffect, useRef} from 'react';
 import {FontAwesomeIcon} from '@fortawesome/react-fontawesome';
 import {faSearch, faTimes} from '@fortawesome/free-solid-svg-icons';
 import PropTypes from "prop-types";
-import useKeyPress from "../hooks/useKeyPress";
+import useKeyPress from "../hooks/useKeyPress.js";
 
 const FileSearch = ({title, onFileSearch}) => {
     const [inputActive, setInputActive] = useState(false);

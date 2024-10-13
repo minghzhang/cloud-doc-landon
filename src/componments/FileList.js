@@ -3,7 +3,7 @@ import {FontAwesomeIcon} from '@fortawesome/react-fontawesome';
 import {faMarkdown} from "@fortawesome/free-brands-svg-icons";
 import {faEdit, faTimes, faTrash} from "@fortawesome/free-solid-svg-icons";
 import PropTypes from "prop-types";
-import useKeyPress from "../hooks/useKeyPress";
+import useKeyPress from "../hooks/useKeyPress.js";
 
 const FileList = ({files, onFileClick, onSaveEdit, onFileDelete}) => {
     const [editFileId, setEditFileId] = useState(null);
