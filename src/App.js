@@ -47,30 +47,33 @@ function App() {
     const fileListArr = searchFiles.length > 0 ? searchFiles : filesArr;
     const activeFile = activeFileId && files[activeFileId];
 
+    const fetchInitialFiles = async () => {
+        const initialFiles = await getInitialFiles();
+        if (initialFiles) {
+            console.log(`fetchInitialFiles`, initialFiles);
+            setFiles(initialFiles);
+        } else {
+            setFiles({});
+        }
+    };
     // 使用 useEffect 来处理异步调用
     useEffect(() => {
-        const fetchInitialFiles = async () => {
-            const initialFiles = await getInitialFiles();
-            if (initialFiles) {
-                console.log(`initialFiles`, initialFiles);
-                setFiles(initialFiles);
-            } else {
-                setFiles({});
-            }
-        };
         fetchInitialFiles();
     }, []);  // 空依赖数组确保这个只在组件挂载时运行一次
 
+
+    console.log("loadedFiles",files);
 
     async function fetchAppPath(name) {
         return await window.electronAPI.getSavedLocation(name);
     }
 
-    //readFile("hello.md")
     const fileClick = (fileId) => {
         setActiveFileId(fileId);
+        console.log("files", files);
         const currentFile = files[fileId];
-        if (!currentFile.isLoaded) {
+        console.log(currentFile);
+        if (currentFile.isLoaded === undefined || !currentFile.isLoaded) {
             window.electronAPI.readFile(currentFile.path).then(data => {
                 const newFile = {...currentFile, body: data, isLoaded: true};
                 setFiles({...files, [fileId]: newFile});
