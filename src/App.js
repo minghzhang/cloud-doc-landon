@@ -239,6 +239,7 @@ function App() {
                 <div className="col-3 left-panel">
                     <FileSearch title="my cloud doc" onFileSearch={fileSearch}/>
                     <FileList files={fileListArr}
+                              filesRef={filesRef}
                               onFileClick={fileClick}
                               onFileDelete={fileDelete}
                               onSaveEdit={fileNameChange}

@@ -4,7 +4,8 @@ import {faMarkdown} from "@fortawesome/free-brands-svg-icons";
 import {faEdit, faTimes, faTrash} from "@fortawesome/free-solid-svg-icons";
 import PropTypes from "prop-types";
 import useKeyPress from "../hooks/useKeyPress.js";
-const FileList = ({files, onFileClick, onSaveEdit, onFileDelete}) => {
+
+const FileList = ({files, filesRef, onFileClick, onSaveEdit, onFileDelete}) => {
     const [editFileId, setEditFileId] = useState(null);
     const [value, setValue] = useState('');
 
@@ -71,7 +72,10 @@ const FileList = ({files, onFileClick, onSaveEdit, onFileDelete}) => {
         window.electronAPI.onContextMenuCommand((event, command, targetFileId) => {
             if (command === 'rename') {
                 console.log('MenuItem rename clicked', targetFileId);
-                //onSaveEdit(targetFileId);
+                console.log("filesRef.current", filesRef.current);
+                const editFile = filesRef.current[targetFileId];
+                setEditFileId(editFile.id);
+                setValue(editFile.title);
             } else if (command === 'delete') {
                 console.log('MenuItem delete clicked', targetFileId);
                 onFileDelete(targetFileId);
@@ -89,7 +93,7 @@ const FileList = ({files, onFileClick, onSaveEdit, onFileDelete}) => {
         return () => {
             document.removeEventListener('contextmenu', handleContextMenu);
         };
-    },[])
+    }, [])
 
     let node = useRef(null);
     return (<ul className="list-group list-group-flush file-list">
