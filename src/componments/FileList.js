@@ -101,28 +101,16 @@ const FileList = ({files, filesRef, onFileClick, onSaveEdit, onFileDelete}) => {
             <li className="list-group-item row bg-light d-flex align-content-center mx-0 file-item" data-id={file.id}
                 data-title={file.title} key={file.id}>
 
-                {(file.id !== editFileId && !file.isNew) && <>
-
-                <span className="col-2">
-                    <FontAwesomeIcon icon={faMarkdown}/>
-                </span>
-                    <span className="col-6 c-link" onClick={() => onFileClick(file.id)}>
-                            {file.title}
-                </span>
-
-                    <button className="icon-button col-2" type="button"
-                            onClick={() => {
-                                setEditFileId(file.id);
-                                setValue(file.title);
-                            }}
-                    >
-                        <FontAwesomeIcon icon={faEdit}/>
-                    </button>
-                    <button className="icon-button col-2" type="button"
-                            onClick={() => onFileDelete(file.id)}>
-                        <FontAwesomeIcon icon={faTrash}/>
-                    </button>
-                </>}
+                {(file.id !== editFileId && !file.isNew) &&
+                    <>
+                        <span className="col-2">
+                            <FontAwesomeIcon icon={faMarkdown}/>
+                        </span>
+                            <span className="col-6 c-link" onClick={() => onFileClick(file.id)}>
+                                    {file.title}
+                        </span>
+                    </>
+                }
                 {(file.id === editFileId || file.isNew) &&
                     <>
                         <input type="text" className=" col-10" value={value} ref={node}
