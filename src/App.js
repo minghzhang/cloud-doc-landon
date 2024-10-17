@@ -8,7 +8,7 @@ import {FontAwesomeIcon} from '@fortawesome/react-fontawesome';
 import {faPlus, faFileImport, faSave} from '@fortawesome/free-solid-svg-icons';
 import BottomBtn from "./componments/BottomBtn.js";
 import TabList from "./componments/TabList.js";
-import {useState, useEffect} from "react";
+import {useState, useEffect, useRef} from "react";
 import {v4 as uuidv4} from 'uuid';
 import {flattenArr, objToArray} from "./utils/helper.js";
 import {getBaseName, getDirName, joinPaths} from "./utils/pathHelper.js";
@@ -36,6 +36,12 @@ const getInitialFiles = async () => {
 function App() {
 
     const [files, setFiles] = useState({});
+    const filesRef = useRef(files);
+    useEffect(() => {
+        filesRef.current = files;
+        console.log("filesRef.current update", files);
+    }, [files]);
+
     const [activeFileId, setActiveFileId] = useState('');
     const [openedFileIds, setOpenedFileIds] = useState([]);
     const [unSavedFileIds, setUnSavedFileIds] = useState([]);
@@ -45,7 +51,15 @@ function App() {
     })
     const filesArr = objToArray(files);
     const fileListArr = searchFiles.length > 0 ? searchFiles : filesArr;
-    const activeFile = activeFileId && files[activeFileId];
+    const activeFile = activeFileId && filesRef.current[activeFileId];
+
+
+
+    const openedFileIdsRef = useRef(openedFileIds);
+    useEffect(() => {
+        openedFileIdsRef.current = openedFileIds;
+        console.log("openedFileIdsRef.current update", openedFileIdsRef.current);
+    }, [openedFileIds]);
 
     const fetchInitialFiles = async () => {
         const initialFiles = await getInitialFiles();
@@ -62,26 +76,24 @@ function App() {
     }, []);  // 空依赖数组确保这个只在组件挂载时运行一次
 
 
-    console.log("loadedFiles",files);
-
     async function fetchAppPath(name) {
         return await window.electronAPI.getSavedLocation(name);
     }
 
     const fileClick = (fileId) => {
         setActiveFileId(fileId);
-        console.log("files", files);
-        const currentFile = files[fileId];
+        console.log("filesRef.current", filesRef.current);
+        const currentFile = filesRef.current[fileId];
         console.log(currentFile);
-        if (currentFile.isLoaded === undefined || !currentFile.isLoaded) {
+        if (!currentFile.isLoaded) {
             window.electronAPI.readFile(currentFile.path).then(data => {
                 const newFile = {...currentFile, body: data, isLoaded: true};
-                setFiles({...files, [fileId]: newFile});
+                setFiles({...filesRef.current, [fileId]: newFile});
 
             }).catch(error => {
                 if (error.message.includes('ENOENT')) {
                     console.error(`File not found: ${currentFile.path}`);
-                    const {[fileId]: value, ...filesAfterDelete} = files;
+                    const {[fileId]: value, ...filesAfterDelete} = filesRef.current[fileId];
                     saveFilesToStore(filesAfterDelete);
                     setFiles(filesAfterDelete);
                     tabClose(fileId);
@@ -90,8 +102,8 @@ function App() {
                 }
             })
         }
-        if (!openedFileIds.includes(fileId)) {
-            setOpenedFileIds([...openedFileIds, fileId]);
+        if (!openedFileIdsRef.current.includes(fileId)) {
+            setOpenedFileIds([...openedFileIdsRef.current, fileId]);
         }
     }
 
@@ -100,7 +112,7 @@ function App() {
     }
 
     const tabClose = (fileId) => {
-        const otherOpenedFileIds = openedFileIds.filter(id => id !== fileId);
+        const otherOpenedFileIds = openedFileIdsRef.current.filter(id => id !== fileId);
         setOpenedFileIds(otherOpenedFileIds);
         if (otherOpenedFileIds.length > 0) {
             setActiveFileId(otherOpenedFileIds[0]);
@@ -119,21 +131,26 @@ function App() {
     }
 
     const fileDelete = async (fileId) => {
-        const {[fileId]: value, ...afterDelete} = files;
-        if (files[fileId].isNew) {
+        const {[fileId]: value, ...afterDelete} = filesRef.current;
+        if (filesRef.current[fileId].isNew) {
             setFiles(afterDelete)
+            //filesRef.current = afterDelete;
         } else {
-            let path = files[fileId].path;
-            window.electronAPI.deleteFile(path).then(() => {
+            let path = filesRef.current[fileId].path;
+            console.log("delete path begin", path);
+            await window.electronAPI.deleteFile(path).then(() => {
                 setFiles(afterDelete)
+                //filesRef.current = afterDelete;
                 saveFilesToStore(afterDelete);
                 //close the tab
                 tabClose(fileId);
+                console.log("delete path end", path);
             })
         }
     }
 
     const fileNameChange = async (fileId, newTitle, isNew) => {
+
         let newPath = isNew ? await getFullFilePath(`${newTitle}`) : joinPaths(getDirName(files[fileId].path), `${newTitle}.md`);
         const modifiedFile = {...files[fileId], 'title': newTitle, 'path': newPath, isNew: false};
         const newFiles = {...files, [fileId]: modifiedFile};

@@ -71,6 +71,7 @@ const FileList = ({files, onFileClick, onSaveEdit, onFileDelete}) => {
         window.electronAPI.onContextMenuCommand((event, command, targetFileId) => {
             if (command === 'rename') {
                 console.log('MenuItem rename clicked', targetFileId);
+                //onSaveEdit(targetFileId);
             } else if (command === 'delete') {
                 console.log('MenuItem delete clicked', targetFileId);
                 onFileDelete(targetFileId);
@@ -88,7 +89,7 @@ const FileList = ({files, onFileClick, onSaveEdit, onFileDelete}) => {
         return () => {
             document.removeEventListener('contextmenu', handleContextMenu);
         };
-    },[files])
+    },[])
 
     let node = useRef(null);
     return (<ul className="list-group list-group-flush file-list">
